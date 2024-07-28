@@ -43,10 +43,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
-
 import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.entity.StringEntity;
 
 public class MainActivity extends AppCompatActivity implements
         GoogleMap.OnMapClickListener,
@@ -85,22 +82,15 @@ public class MainActivity extends AppCompatActivity implements
         //  timestamp_rental_started (long)
 
         if (sharedPrefs.getString("current_user_id", "").equals("")) {
-            String uid = Utils.generateRandomString(16);
-            sharedPrefs.edit().putString("current_user_id", uid).apply();
+            sharedPrefs.edit().putString("current_user_id", "myUserId").apply();
         }
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         enableMyLocation();
 
-        JSONObject jsonParams = new JSONObject();
-        StringEntity jsonParamsAsString;
-        try {
-            jsonParams.put("user_id", sharedPrefs.getString("current_user_id", ""));
-            jsonParamsAsString = new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException | JSONException e) {
-            throw new RuntimeException(e);
-        }
-        ServerRequestClient.post(getApplicationContext(), "/get_rental", jsonParamsAsString, new JsonHttpResponseHandler(){
+        RequestParams params = new RequestParams();
+        params.put("user_id", sharedPrefs.getString("current_user_id", ""));
+        ServerRequestClient.post("/get_rental", params, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
@@ -108,15 +98,13 @@ public class MainActivity extends AppCompatActivity implements
                     if (active_rental.equals("yes")) {
                         String drone_id = response.getString("drone_id");
                         sharedPrefs.edit().putString("current_drone_id", drone_id).apply();
-                        // long timestamp_rental_started = response.getLong("timestamp_rental_started");
-                        long timestamp_diff = response.getLong("timestamp_diff");
-                        long currentUnixTime = System.currentTimeMillis() / 1000L;
-                        long timestamp_rental_started = currentUnixTime + timestamp_diff;
+                        long timestamp_rental_started = response.getLong("timestamp_rental_started");
                         sharedPrefs.edit().putLong("timestamp_rental_started", timestamp_rental_started).apply();
 
                         ImageView button_current_rental = findViewById(R.id.button_current_rental);
                         button_current_rental.setVisibility(View.VISIBLE);
                     }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -128,30 +116,18 @@ public class MainActivity extends AppCompatActivity implements
         ConstraintLayout connect_to_drone_loading = findViewById(R.id.stopping_rental);
         connect_to_drone_loading.setVisibility(View.VISIBLE);
 
-        JSONObject jsonParams = new JSONObject();
-        StringEntity jsonParamsAsString;
-        try {
-            jsonParams.put("user_id", sharedPrefs.getString("current_user_id", ""));
-            jsonParams.put("drone_id", sharedPrefs.getString("current_drone_id", ""));
-            jsonParamsAsString = new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException | JSONException e) {
-            throw new RuntimeException(e);
-        }
-        ServerRequestClient.post(getApplicationContext(), "/rent_drone", jsonParamsAsString, new JsonHttpResponseHandler(){
+        RequestParams params = new RequestParams();
+        params.put("user_id", sharedPrefs.getString("current_user_id", ""));
+        params.put("drone_id", sharedPrefs.getString("current_drone_id", ""));
+        ServerRequestClient.post("/rent_drone", params, new JsonHttpResponseHandler(){
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
                     String status = response.getString("status");
                     if (status.equals("success")) {  // open next Activity on success
-                        // long timestamp_rental_started = response.getLong("timestamp_rental_started");
-                        // long timestamp_rental_started = response.getLong("timestamp_rental_started");
-                        long timestamp_diff = response.getLong("timestamp_diff");
-                        long currentUnixTime = System.currentTimeMillis() / 1000L;
-                        long timestamp_rental_started = currentUnixTime + timestamp_diff;
+                        long timestamp_rental_started = response.getLong("timestamp_rental_started");
                         sharedPrefs.edit().putLong("timestamp_rental_started", timestamp_rental_started).apply();
-                        ImageView button_current_rental = findViewById(R.id.button_current_rental);
-                        button_current_rental.setVisibility(View.VISIBLE);
-                        openDroneInteractionActivity(null);
+                        openIdentificationActivity();
                     } else {
                         String message = response.getString("message");
                         Toast.makeText(MainActivity.this, "Rental failed: " + message, Toast.LENGTH_SHORT).show();
@@ -347,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements
             TextView after_rent_overlay_duration = findViewById(R.id.after_rent_overlay_duration);
             after_rent_overlay_duration.setText("" + duration + " min");
             TextView after_rent_overlay_price = findViewById(R.id.after_rent_overlay_price);
-            after_rent_overlay_price.setText(String.format("%.2f €", price_to_pay));
+            after_rent_overlay_price.setText("" + price_to_pay + " €");
             
             ImageView button_current_rental = findViewById(R.id.button_current_rental);
             button_current_rental.setVisibility(View.GONE);

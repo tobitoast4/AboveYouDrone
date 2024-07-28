@@ -24,11 +24,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 
 import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.entity.StringEntity;
 
 public class DroneInteractionActivity extends AppCompatActivity {
 
@@ -67,16 +65,10 @@ public class DroneInteractionActivity extends AppCompatActivity {
     }
 
     private void sendToggleFollow(String endpoint) {
-        JSONObject jsonParams = new JSONObject();
-        StringEntity jsonParamsAsString;
-        try {
-            jsonParams.put("user_id", sharedPrefs.getString("current_user_id", ""));
-            jsonParams.put("drone_id", sharedPrefs.getString("current_drone_id", ""));
-            jsonParamsAsString = new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException | JSONException e) {
-            throw new RuntimeException(e);
-        }
-        ServerRequestClient.post(getApplicationContext(), endpoint, jsonParamsAsString, new JsonHttpResponseHandler() {
+        RequestParams params = new RequestParams();
+        params.put("user_id", sharedPrefs.getString("current_user_id", ""));
+        params.put("drone_id", sharedPrefs.getString("current_drone_id", ""));
+        ServerRequestClient.post(endpoint, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
@@ -91,23 +83,31 @@ public class DroneInteractionActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                super.onFailure(statusCode, headers, responseString, throwable);
+            }
         });
     }
 
     public void stopRental(View v){
-        JSONObject jsonParams = new JSONObject();
-        StringEntity jsonParamsAsString;
-        try {
-            jsonParams.put("user_id", sharedPrefs.getString("current_user_id", ""));
-            jsonParams.put("drone_id", sharedPrefs.getString("current_drone_id", ""));
-            jsonParamsAsString = new StringEntity(jsonParams.toString());
-        } catch (UnsupportedEncodingException | JSONException e) {
-            throw new RuntimeException(e);
-        }
-
+        RequestParams params = new RequestParams();
+        params.put("user_id", sharedPrefs.getString("current_user_id", ""));
+        params.put("drone_id", sharedPrefs.getString("current_drone_id", ""));
         ConstraintLayout image_loading = findViewById(R.id.stopping_rental);
         image_loading.setVisibility(View.VISIBLE);
-        ServerRequestClient.post(getApplicationContext(), "/stop_rental", jsonParamsAsString, new JsonHttpResponseHandler() {
+        ServerRequestClient.post("/stop_rental", params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 try {
