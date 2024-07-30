@@ -10,7 +10,7 @@ Check out branch `tree/using_python_server` to test the app against the python m
 
 <img src="doc\infrastructure_concept.png" width="500px"/>
 
-The following endpoints are implemented:
+The following endpoints are implemented (yet the last two only in the python mock server):
 
 | Endpoint path      | Description                                                                                                                                                                        |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
