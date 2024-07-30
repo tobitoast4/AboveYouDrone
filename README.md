@@ -1,5 +1,6 @@
 # AboveYouDrone
 
+### Overview
 
 Repository for AboveYouDrone Android app + mock python server. 
 Use the app in combination with a DJI Ryze Tello drone and a ESP32 micro controller in the following setup:
@@ -10,6 +11,7 @@ Check out branch `tree/using_python_server` to test the app against the python m
 
 <img src="doc\infrastructure_concept.png" width="500px"/>
 
+### Endpoints
 The following endpoints are implemented (yet the last two only in the python mock server):
 
 | Endpoint path      | Description                                                                                                                                                                        |
@@ -23,3 +25,10 @@ The following endpoints are implemented (yet the last two only in the python moc
 | /panic_button      | Sends an instruction to start an alarm for instance.                                                                                                                               |
 | /take_snapshot     | Takes a snapshot for the _IdentificationActivity_.                                                                                                                                   |
 | /confirm_snapshot  | Confirms the snapshot for the _IdentificationActivity_.         
+
+
+### Related repositories
+- ESP32-server: https://github.com/Momentum93/Rest_Repo
+- Drone Controller: https://github.com/Momentum93/Above_You_Drone
+- Panic-Button: https://github.com/Momentum93/Panic-Button
+- Android App and Python Mock Server (this): https://github.com/tobitoast4/
